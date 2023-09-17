@@ -12,6 +12,9 @@ import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.Type;
 import org.hibernate.type.spi.TypeConfiguration;
 
+/*
+ * Generate Custom Product Id of format PRO_CURRENTDATE_NUMERIC
+ */
 public class CustomProductIdGenerator extends SequenceStyleGenerator {
 
 	public static final String VALUE_PREFIX_PARAMETER = "valuePrefix";

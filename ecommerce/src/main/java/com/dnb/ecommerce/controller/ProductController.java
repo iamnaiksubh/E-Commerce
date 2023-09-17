@@ -13,11 +13,13 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dnb.ecommerce.dto.Product;
+import com.dnb.ecommerce.exception.ConstraintNotMatchException;
 import com.dnb.ecommerce.exception.IdNotFoundException;
 import com.dnb.ecommerce.exception.InvalidIdException;
 import com.dnb.ecommerce.payload.request.ProductRequest;
@@ -26,8 +28,17 @@ import com.dnb.ecommerce.utils.RequestToEntityMapper;
 
 import jakarta.validation.Valid;
 
+/*
+ **REST API endPoints for CRUD operations**
+	 * 1. Create a Product
+	 * 2. Retrieve All Products
+	 * 3. Retrieve a Product by ID
+	 * 4. Update a Product
+	 * 5. Delete a Product
+*/
+
 @RestController
-@RequestMapping("api/product")
+@RequestMapping("api")
 public class ProductController {
 
 	@Autowired
@@ -36,17 +47,19 @@ public class ProductController {
 	@Autowired
 	RequestToEntityMapper mapper;
 
-	@PostMapping("/create")
-	public ResponseEntity<?> createProduct(@Valid @RequestBody ProductRequest productRequest) throws InvalidIdException {
-		Product product = mapper.getProductEntityObject(productRequest);
+	/** createProduct method takes productRequest parameter and validate it **/
+	@PostMapping("/products/create")
+	public ResponseEntity<?> createProduct(@Valid @RequestBody ProductRequest productRequest) throws InvalidNameException {
+		Product product = mapper.getProductEntityObject(productRequest); // mapping productRequest to product entity object
 		try {
 			return new ResponseEntity(productService.createProduct(product), HttpStatus.CREATED);
 		} catch (InvalidNameException e) {
-			throw new InvalidIdException("Product name should be unique");
+			throw new InvalidNameException("Product name should be unique");
 		}
 	}
 
-	@GetMapping("/{productId}")
+	/** getProductById method return the product corresponding to given productId **/
+	@GetMapping("/products/{productId}")
 	public ResponseEntity<?> getProductById(@PathVariable("productId") String productId) throws IdNotFoundException, InvalidIdException {
 		try {
 			return ResponseEntity.ok(productService.getProductById(productId).get());
@@ -57,7 +70,8 @@ public class ProductController {
 		}
 	}
 
-	@GetMapping("/getAllProduct")
+	/** getAllProduct method return all products **/
+	@GetMapping("/products")
 	public ResponseEntity<?> getAllProduct() {
 		List<Product> products = productService.getAllProduct();
 		
@@ -67,23 +81,33 @@ public class ProductController {
 		return ResponseEntity.ok(products);
 	}
 
-	@DeleteMapping("/{productId}")
-	public ResponseEntity<?> deleteProductById(@PathVariable("productId") String productId) throws IdNotFoundException {
-		try {
-			productService.deleteProductById(productId);
-		} catch (IdNotFoundException e) {
-			throw new IdNotFoundException("Product Id Not FOund");
-		}
+	/** deleteProductById method delete the product corresponding to given productId **/
+	@DeleteMapping("/products/{productId}")
+	public ResponseEntity<?> deleteProductById(@PathVariable("productId") String productId) throws IdNotFoundException, ConstraintNotMatchException {
+		
+			try {
+				productService.deleteProductById(productId);
+			} catch (IdNotFoundException e) {
+				throw new IdNotFoundException("Product Id Not Found");
+			} catch (ConstraintNotMatchException e) {
+				throw new ConstraintNotMatchException("Expire Date Should Be Before Current Date To Delete Product");
+			}
+		
 		return ResponseEntity.ok("Product Deleted Successfully");
 	}
 	
-	@PostMapping("/{productId}")
-	public ResponseEntity<?> updateProduct(@RequestBody Product product, @PathVariable("productId") String productId) throws InvalidNameException, IdNotFoundException {
+	/** updateProduct method update the particular product which have same productId with the productRequest fields **/
+	@PutMapping("/products/{productId}")
+	public ResponseEntity<?> updateProduct(@Valid @RequestBody ProductRequest productRequest, @PathVariable("productId") String productId) throws InvalidNameException, IdNotFoundException {
 		Optional<Product> updatedProduct;
-		if(productService.productIdExist(productId))
-			updatedProduct = productService.updateProduct(product);
+		if(productService.productIdExist(productId)) {
+			Product product = mapper.getProductEntityObject(productRequest);
+			product.setProductId(productId);
+			updatedProduct = productService.updateProduct(product, productId);
+		}
 		else
 			throw new IdNotFoundException("Product Id Doesn't exist");
+		
 		return new ResponseEntity(updatedProduct, HttpStatus.OK);
 	}
 }

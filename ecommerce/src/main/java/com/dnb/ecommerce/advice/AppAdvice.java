@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.naming.InvalidNameException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +20,19 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.dnb.ecommerce.exception.ConstraintNotMatchException;
 import com.dnb.ecommerce.exception.IdNotFoundException;
 import com.dnb.ecommerce.exception.InvalidIdException;
 
+/**
+ * Handling Custom and Predefine Exception 
+ */
 @ControllerAdvice
 public class AppAdvice {
 	
+	// Handling IdNotFoundException
 	@ExceptionHandler(IdNotFoundException.class)
-	public ResponseEntity<?> IdNotFoundExceptionHandler (IdNotFoundException e){
+	public ResponseEntity<?> idNotFoundExceptionHandler (IdNotFoundException e){
 		Map<String, String> map = new HashMap<>();
 
 		map.put("Message", e.getMessage());
@@ -35,9 +42,34 @@ public class AppAdvice {
 
 	}
 	
+	// Handling ConstraintNotMatchException
+		@ExceptionHandler(ConstraintNotMatchException.class)
+		public ResponseEntity<?> constraintNotMatchExceptionHandler (ConstraintNotMatchException e){
+			Map<String, String> map = new HashMap<>();
+
+			map.put("Message", e.getMessage());
+			map.put("HttpStatus", HttpStatus.NOT_FOUND + "");
+
+			return new ResponseEntity(map, HttpStatus.NOT_FOUND);
+
+		}
 	
+	
+	// Handling InvalidNameException
+		@ExceptionHandler(InvalidNameException.class)
+		public ResponseEntity<?> invalidNameExceptionHandler (InvalidNameException e){
+			Map<String, String> map = new HashMap<>();
+
+			map.put("Message", e.getMessage());
+			map.put("HttpStatus", HttpStatus.NOT_FOUND + "");
+
+			return new ResponseEntity(map, HttpStatus.NOT_FOUND);
+
+		}
+	
+	// Handling InvalidIdException
 	@ExceptionHandler(InvalidIdException.class)
-	public ResponseEntity<?> InvalidIdExceptionHandler (InvalidIdException e){
+	public ResponseEntity<?> invalidIdExceptionHandler (InvalidIdException e){
 		Map<String, String> map = new HashMap<>();
 
 		map.put("Message", e.getMessage());
@@ -47,6 +79,7 @@ public class AppAdvice {
 
 	}
 	
+	// Handling HttpRequestMethodNotSupportedException
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
 	public ResponseEntity<Map<String, String>> handleException(HttpRequestMethodNotSupportedException e){
 		
@@ -68,20 +101,17 @@ public class AppAdvice {
 	
 	}
 	
-//	@ExceptionHandler(MethodArgumentNotValidException.class)
-//	public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e,
-//			HttpHeaders headers, HttpStatusCode status, HttpRequest request) {
-//		
-//		Map<String, Object> responseBody = new LinkedHashMap<>();
-//		responseBody.put("timestamp" , LocalDateTime.now());
-//		responseBody.put("status",  status.value());
-//	
-//		
-//		Map<String, String> resultMap = e.getBindingResult().getFieldErrors().stream().collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-//		
-//		
-//		responseBody.put("error", resultMap);
-//		
-//		return new ResponseEntity<>(responseBody, headers, status);
-//	}
+	// Handling MethodArgumentNotValidException
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        Map<String, String> responseBody = new LinkedHashMap<>();
+        responseBody.put("timestamp", LocalDateTime.now().toString());
+        responseBody.put("status", status.value() + "");
+        responseBody.put("errors", e.getFieldError().getDefaultMessage());
+
+        return new ResponseEntity<>(responseBody, status);
+    }
 }

@@ -7,6 +7,8 @@ import com.dnb.ecommerce.payload.request.ProductRequest;
 
 @Component
 public class RequestToEntityMapper {
+	
+//	Mapping ProductRequest fields to Product Entity object and returning it 
 
 	public Product getProductEntityObject(ProductRequest productRequest) {
 		Product product = new Product();

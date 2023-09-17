@@ -1,5 +1,9 @@
 package com.dnb.ecommerce.exception;
 
+/**
+ * Handling Id Not Found Exception 
+ */
+
 public class IdNotFoundException extends Exception{
 	
 	public IdNotFoundException(String exceptionMessage) {

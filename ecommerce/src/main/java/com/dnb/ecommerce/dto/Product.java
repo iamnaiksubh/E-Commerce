@@ -15,6 +15,15 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/*
+ ** Product Entity or Product Data Class with following fields **
+	 * 1. Product Id : String (Primary Key)
+	 * 2. Product Name : String (unique, NotBlank)
+	 * 3. Product Description : String (NotBlank)
+	 * 4. ProductExpiryDate : String (NotBalnk)
+	 * 5. Product Price : Float (Positive Value)
+*/
+
 @Data
 @NoArgsConstructor
 @Entity
@@ -30,7 +39,7 @@ public class Product {
 	@NotBlank(message = "Name can't be blank.")
 	@Column(unique = true)
 	String productName;
-	@NotBlank(message = "description can't be blank.")
+	@NotBlank(message = "Description can't be blank.")
 	String productDescription;
 	String productCatagory;
 	@NotBlank(message = "Date can't blank")
